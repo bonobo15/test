@@ -116,27 +116,27 @@ if ($GL) { echo "`nYour Location: `n$GL" >> $Env:temp\foo.txt }
 #>
 
 
-function Get-PubIP {
+#function Get-PubIP {
 
-    try {
+#    try {
 
-    $computerPubIP=(Invoke-WebRequest ipinfo.io/ip -UseBasicParsing).Content
+#    $computerPubIP=(Invoke-WebRequest ipinfo.io/ip -UseBasicParsing).Content
 
-    }
+#    }
  
  # If no Public IP is detected function will return $null to avoid sapi speak
 
     # Write Error is just for troubleshooting 
-    catch {Write-Error "No Public IP was detected" 
-    return $null
-    -ErrorAction SilentlyContinue
-    }
+#    catch {Write-Error "No Public IP was detected" 
+#    return $null
+#    -ErrorAction SilentlyContinue
+#    }
 
-    return $computerPubIP
-}
+#    return $computerPubIP
+#}
 
-$PubIP = Get-PubIP
-if ($PubIP) { echo "`nYour Public IP: $PubIP" >> $Env:temp\foo.txt }
+#$PubIP = Get-PubIP
+#if ($PubIP) { echo "`nYour Public IP: $PubIP" >> $Env:temp\foo.txt }
 
 
 ###########################################################################################################
@@ -299,7 +299,7 @@ rm $env:TEMP\foo.txt,$env:TEMP\foo.jpg -r -Force -ErrorAction SilentlyContinue
 	This will take the image you generated and set it as the targets wall paper
 #>
 
-Function Set-WallPaper {
+#Function Set-WallPaper {
  
 <#
  
