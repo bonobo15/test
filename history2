@@ -1,0 +1,60 @@
+$ImageName = "kutya"
+$Search = ".*"
+
+function Get-BrowserData {
+    [CmdletBinding()]
+    param (
+        [Parameter(Position = 1, Mandatory = $True)]
+        [string]$Browser,
+        [Parameter(Position = 2, Mandatory = $True)]
+        [string]$DataType
+    ) 
+
+    $Regex = '(http|https)://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)*?'
+
+    if     ($Browser -eq 'chrome'  -and $DataType -eq 'history'   )  {$Path = "$Env:USERPROFILE\AppData\Local\Google\Chrome\User Data\Default\History"}
+    elseif ($Browser -eq 'chrome'  -and $DataType -eq 'bookmarks' )  {$Path = "$Env:USERPROFILE\AppData\Local\Google\Chrome\User Data\Default\Bookmarks"}
+    elseif ($Browser -eq 'edge'    -and $DataType -eq 'history'   )  {$Path = "$Env:USERPROFILE\AppData\Local\Microsoft\Edge\User Data\Default\History"}
+    elseif ($Browser -eq 'edge'    -and $DataType -eq 'bookmarks' )  {$Path = "$Env:USERPROFILE\AppData\Local\Microsoft\Edge\User Data\Default\Bookmarks"}
+    elseif ($Browser -eq 'firefox' -and $DataType -eq 'history'   )  {$Path = "$Env:USERPROFILE\AppData\Roaming\Mozilla\Firefox\Profiles\*.default-release\places.sqlite"}
+    
+    $Value = Get-Content -Path $Path | Select-String -AllMatches $Regex | % {($_.Matches).Value} | Sort -Unique
+    $Result = @()
+    $Value | ForEach-Object {
+        $Key = $_
+        if ($Key -match $Search){
+            $Result += New-Object -TypeName PSObject -Property @{
+                User = $env:UserName
+                Browser = $Browser
+                DataType = $DataType
+                Data = $Key
+            }
+        }
+    }
+    return $Result
+}
+
+$fn = Get-BrowserData -Browser chrome -DataType history
+$content = ($fn | Out-String)
+
+Add-Type -AssemblyName System.Drawing
+
+$w = 800
+$h = 600
+$filename = "$env:tmp\foo.jpg"
+$bmp = New-Object System.Drawing.Bitmap $w, $h
+$font = New-Object System.Drawing.Font "Consolas", 18
+$brushBg = [System.Drawing.Brushes]::White
+$brushFg = [System.Drawing.Brushes]::Black
+$graphics = [System.Drawing.Graphics]::FromImage($bmp)
+$graphics.FillRectangle($brushBg, 0, 0, $bmp.Width, $bmp.Height)
+$graphics.DrawString($content, $font, $brushFg, 10, 10)
+$graphics.Dispose()
+$bmp.Save($filename)
+
+# Save hidden text
+$hiddenMessage = "Hidden data here"
+echo $hiddenMessage > $Env:temp\foo.txt
+cmd.exe /c copy /b "$Env:temp\foo.jpg" + "$Env:temp\foo.txt" "$Env:USERPROFILE\Desktop\$ImageName.jpg"
+
+rm $env:TEMP\foo.txt, $env:TEMP\foo.jpg -r -Force -ErrorAction SilentlyContinue
